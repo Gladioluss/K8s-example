@@ -1,0 +1,42 @@
+{{- if hasPrefix "review" .Values.werf.env }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job-create-databases
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "1"
+spec:
+  activeDeadlineSeconds: 540
+  template:
+    metadata:
+      name: job-create-databases
+    spec:
+      restartPolicy: Never
+      nodeSelector:
+        nodepool: application-node-pool
+      imagePullSecrets:
+        - name: {{ required ".Values.registry.secret_name" .Values.registry.secret_name }}
+      containers:
+      - name: recreatedb
+        image: {{ .Values.werf.image.preparepostgresreview }}
+        command:
+        - /bin/sh
+        - -c
+        - |
+          chmod +x /scripts/pg.sh
+          echo "Starting db script now"
+          . /scripts/pg.sh
+        volumeMounts:
+        - name: scripts
+          mountPath: /scripts/pg.sh
+          subPath: pg.sh
+        envFrom:
+        - secretRef:
+            name: postgres-restore-secrets
+      volumes:
+      - name: scripts
+        configMap:
+          name: restore-database
+{{- end }}
