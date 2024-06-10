@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: &cluster_name haproxy
+  labels:
+    name: *cluster_name
+spec:
+  ports:
+    - name: db
+      port: 5432
+    - name: http
+      port: 7000
+  selector:
+    app: *cluster_name

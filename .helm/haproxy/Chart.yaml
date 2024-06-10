@@ -1,0 +1,4 @@
+apiVersion: v1
+name: haproxy-ingress
+version: 1.0.0
+engine: gotpl

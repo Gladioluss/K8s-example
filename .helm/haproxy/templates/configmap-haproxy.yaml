@@ -1,0 +1,33 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: haproxy
+data:
+  haproxy.cfg: |
+    global
+      maxconn 1000
+      log stdout format raw local0
+    resolvers k8s
+      parse-resolv-conf
+      accepted_payload_size 8192
+      hold valid 1s
+    defaults
+        log global
+        mode tcp
+        retries 2
+        timeout client 30m
+        timeout connect 4s
+        timeout server 30m
+        timeout check 5s
+    listen stats
+        mode http
+        bind *:7000
+        stats enable
+        stats uri /
+    listen dbs
+        bind *:5432
+        balance leastconn
+        option httpchk
+        http-check expect status 200
+        default-server inter 3s fall 3 rise 2 on-marked-down shutdown-sessions

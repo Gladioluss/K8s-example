@@ -1,0 +1,27 @@
+replicaCount: 3
+
+image:
+  repository: hashicorp/consul
+  tag: stable
+  pullPolicy: IfNotPresent
+
+
+serviceAccount:
+  create: true
+  name: consul
+
+fsGroup: 2000
+
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+
+  hosts:
+    - host: chart-prod.local
+      paths: []
+
+

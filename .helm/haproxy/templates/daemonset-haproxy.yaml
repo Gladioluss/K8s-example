@@ -1,0 +1,44 @@
+---
+apiVersion: v1
+kind: DaemonSet
+metadata:
+  name: haproxy
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "haproxy.fullname" . }}
+      component: lb
+  template:
+    metadata:
+      labels:
+        app: {{ include "haproxy.fullname" . }}
+        component: lb
+    spec:
+      terminationGracePeriodSeconds: 0
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+      nodeSelector:
+        role: haproxy
+      tolerations:
+        - key: "{{ .Release.Name }}"
+          operator: "Exists"
+          effect: "NoSchedule"
+      containers:
+        - name: lb
+          image: haproxy:2.2.4-alpine
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: RELEASE_SOLT
+              value: haproxy
+          ports:
+            - containerPort: 7000
+              protocol: TCP
+            - containerPort: 5432
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /usr/local/etc/haproxy
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "haproxy.fullname" . }}

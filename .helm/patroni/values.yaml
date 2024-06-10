@@ -1,0 +1,60 @@
+replicaCount: 3
+
+image:
+  repository: registry.opensource.zalan.do/acid/spilo-10
+  tag: 1.5-p5
+  pullPolicy: IfNotPresent
+
+credentials:
+  superuser: tea
+  admin: cola
+  standby: pinacolada
+
+kubernetes:
+  dcs:
+    enable: true
+  configmaps:
+    enable: false
+consul:
+  enable: false
+  deployChart: false
+  hosts:
+walE:
+  enable: false
+  scheduleCronJob: 00 01 * * *
+  retainBackups: 2
+  s3Bucket:
+  gcsBucket:
+  kubernetesSecret:
+  backupThresholdMegabytes: 1024
+  backupThresholdPercentage: 30
+
+persistentVolume:
+  enabled: true
+  size: 1G
+  subPath: ""
+  mountPath: "/home/postgres/pgdata"
+  annotations: {}
+  accessModes:
+    - ReadWriteOnce
+
+
+affinityTemplate: |
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        topologyKey: "kubernetes.io/hostname"
+        labelSelector:
+          matchLabels:
+            app:  {{ template "patroni.name" . }}
+            release: {{ .Release.Name | quote }}
+
+rbac:
+  create: true
+
+serviceAccount:
+  create: true
+  name: patroni
+
+
